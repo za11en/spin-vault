@@ -36,9 +36,14 @@ jobs:
       - name: Setup Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          # We use || true so it doesn't fail if already initialized
-          npx cap init Spinvault com.spinvault.app --web-dir=dist --npm-client=npm || true
+          
+          # Initialize Capacitor (Corrected command)
+          npx cap init Spinvault com.spinvault.app --web-dir=dist || true
+          
+          # Add Android platform
           npx cap add android || true
+          
+          # Sync web code to Android project
           npx cap sync
 
       - name: Build APK
