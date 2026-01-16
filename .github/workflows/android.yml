@@ -16,7 +16,7 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v4
 
-      - name: Setup Java (Upgraded to v21)
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -36,15 +36,27 @@ jobs:
       - name: Setup Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          
-          # Initialize Capacitor
           npx cap init Spinvault com.spinvault.app --web-dir=dist || true
-          
-          # Add Android platform
           npx cap add android || true
-          
-          # Sync web code to Android project
           npx cap sync
+
+      # --- NEW FIX STEP STARTS HERE ---
+      - name: Fix Kotlin Duplicate Classes
+        run: |
+          cd android
+          # Append a resolution strategy to force all Kotlin modules to version 1.8.22
+          echo "
+          subprojects {
+              project.configurations.all {
+                  resolutionStrategy.eachDependency { details ->
+                      if (details.requested.group == 'org.jetbrains.kotlin' && details.requested.name.startsWith('kotlin-stdlib')) {
+                          details.useVersion '1.8.22'
+                      }
+                  }
+              }
+          }
+          " >> build.gradle
+      # --- FIX STEP ENDS HERE ---
 
       - name: Build APK
         run: |
